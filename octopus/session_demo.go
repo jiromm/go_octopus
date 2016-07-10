@@ -1,13 +1,13 @@
 package main
 
 import (
-	s "./session"
+	d "./dispatcher"
 	t "./task"
 	c "./config"
 )
 
 func main() {
-	session := &s.Session{
+	dispatcher := &d.Dispatcher{
 		Name: "Migrate alpha's database",
 		Config: c.NewConfig(&c.Config{}),
 	}
@@ -22,8 +22,8 @@ func main() {
 		Command: "reboot",
 	}
 
-	session.AddTask(task1)
-	session.AddTask(task2)
+	dispatcher.AddTask(task1)
+	dispatcher.AddTask(task2)
 
-	session.Run()
+	dispatcher.Run()
 }
