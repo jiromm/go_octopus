@@ -5,6 +5,8 @@ import (
 
 	t "../task"
 	c "../config"
+
+	conn "./connector"
 )
 
 var I = 0
@@ -23,13 +25,17 @@ func (dispatcher *Dispatcher) AddTask(task *t.Task) {
 }
 
 func (dispatcher *Dispatcher) Run() {
+	connector := conn.Connector{
+		Config: dispatcher.Config,
+	}
+
+	c = connector.Connect()
+
 	for _, i := range dispatcher.Tasks {
 		if i == nil {
 			continue
 		}
 
-		i.Execute()
+		i.Execute(c)
 	}
-
-	fmt.Println(dispatcher.Config)
 }
