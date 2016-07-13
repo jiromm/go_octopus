@@ -1,23 +1,18 @@
-package dispatcher
+package octopus
 
 import (
 	"fmt"
-
-	t "../task"
-	c "../config"
-
-	conn "./connector"
 )
 
 var I = 0
 
 type Dispatcher struct {
 	Name  string
-	Tasks [10]*t.Task
-	Config *c.Config
+	Tasks [10]*Task
+	Config *Config
 }
 
-func (dispatcher *Dispatcher) AddTask(task *t.Task) {
+func (dispatcher *Dispatcher) AddTask(task *Task) {
 	dispatcher.Tasks[I] = task
 	I += 1
 
@@ -25,17 +20,23 @@ func (dispatcher *Dispatcher) AddTask(task *t.Task) {
 }
 
 func (dispatcher *Dispatcher) Run() {
-	connector := conn.Connector{
+	connector := Connector{
 		Config: dispatcher.Config,
 	}
 
-	c = connector.Connect()
+	c := connector.Connect()
 
 	for _, i := range dispatcher.Tasks {
 		if i == nil {
 			continue
 		}
 
-		i.Execute(c)
+		response, err := i.Execute(c)
+
+		if err != nil {
+			fmt.Println("Cannot execute remote command: " + i.Command)
+		}
+
+		fmt.Println(response)
 	}
 }

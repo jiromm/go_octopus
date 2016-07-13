@@ -1,15 +1,15 @@
-package config
+package octopus
 
 type Config struct {
 	Host    string
-	Port    int
+	Port    string
 	Username string
 	Password string
 }
 
 func NewConfig(config *Config) *Config {
-	if config.Port == 0 {
-		config.Port = 22
+	if config.Port == "" {
+		config.Port = "22"
 	}
 
 	if config.Host == "" {
