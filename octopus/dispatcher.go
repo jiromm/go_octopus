@@ -31,12 +31,14 @@ func (dispatcher *Dispatcher) Run() {
 			continue
 		}
 
-		response, err := i.Execute(c)
+		response, err := i.Run(c)
 
 		if err != nil {
-			fmt.Println("Cannot execute remote command: " + i.Command)
+			fmt.Println("Cannot run a task: " + i.Command)
 		}
 
 		fmt.Println(response)
 	}
+
+	fmt.Println("Done")
 }
