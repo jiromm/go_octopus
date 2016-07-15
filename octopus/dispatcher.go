@@ -15,8 +15,6 @@ type Dispatcher struct {
 func (dispatcher *Dispatcher) AddTask(task *Task) {
 	dispatcher.Tasks[I] = task
 	I += 1
-
-	fmt.Println("Task '" + task.Name + "' has been added to dispatcher '" + dispatcher.Name + "'")
 }
 
 func (dispatcher *Dispatcher) Run() {
