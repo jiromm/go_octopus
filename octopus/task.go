@@ -2,14 +2,16 @@ package octopus
 
 import (
 	"fmt"
-	"github.com/jiromm/easyssh"
 	"time"
 	"strings"
+	"path/filepath"
+	"github.com/jiromm/easyssh"
 )
 
 const TYPE_EXECUTE = "execute"
 const TYPE_EXISTENCE_CONFIDENCE = "existence_confidence"
 const TYPE_REMOVE = "remove"
+const TYPE_DOWNLOAD = "download"
 
 type Task struct {
 	Name    string
@@ -35,6 +37,8 @@ func (task *Task) Run(ssh *easyssh.MakeConfig) (result string, err error) {
 		}
 	case TYPE_REMOVE:
 		err = task.Remove(ssh)
+	case TYPE_DOWNLOAD:
+		err = task.Download(ssh)
 	}
 
 	return result, err
@@ -72,6 +76,14 @@ func (task *Task) Remove(ssh *easyssh.MakeConfig) (err error) {
 	fmt.Println("Removing '" + task.Command + "'")
 
 	_, err = ssh.Run("rm " + task.Command)
+
+	return err
+}
+
+func (task *Task) Download(ssh *easyssh.MakeConfig) (err error) {
+	fmt.Println("Downloading '" + task.Command + "'")
+
+	err = ssh.Download(task.Command, "./storage/" + filepath.Base(task.Command))
 
 	return err
 }
