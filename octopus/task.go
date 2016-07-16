@@ -87,3 +87,11 @@ func (task *Task) Download(ssh *easyssh.MakeConfig) (err error) {
 
 	return err
 }
+
+func (task *Task) Upload(ssh *easyssh.MakeConfig) (err error) {
+	fmt.Println("Uploading '" + task.Command + "'")
+
+	err = ssh.Upload("./storage/" + task.Command, "~/" + filepath.Base(task.Command))
+
+	return err
+}
