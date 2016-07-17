@@ -12,6 +12,7 @@ const TYPE_EXECUTE = "execute"
 const TYPE_EXISTENCE_CONFIDENCE = "existence_confidence"
 const TYPE_REMOVE = "remove"
 const TYPE_DOWNLOAD = "download"
+const TYPE_UPLOAD = "upload"
 
 type Task struct {
 	Name    string
@@ -39,6 +40,8 @@ func (task *Task) Run(ssh *easyssh.MakeConfig) (result string, err error) {
 		err = task.Remove(ssh)
 	case TYPE_DOWNLOAD:
 		err = task.Download(ssh)
+	case TYPE_UPLOAD:
+		err = task.Upload(ssh)
 	}
 
 	return result, err
