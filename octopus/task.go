@@ -5,6 +5,7 @@ import (
 	"time"
 	"strings"
 	"path/filepath"
+
 	"github.com/jiromm/easyssh"
 )
 
@@ -18,6 +19,11 @@ type Task struct {
 	Name    string
 	Command string
 	Type	string
+	Config	*Config
+}
+
+func (task *Task) SetConfig(config *Config) {
+	task.Config = config
 }
 
 func (task *Task) Run(ssh *easyssh.MakeConfig) (result string, err error) {
@@ -48,19 +54,19 @@ func (task *Task) Run(ssh *easyssh.MakeConfig) (result string, err error) {
 }
 
 func (task *Task) Execute(ssh *easyssh.MakeConfig) (outStr string, err error) {
-	fmt.Println("Executing '" + task.Command + "'")
+	fmt.Println("Executing '%s'", task.Command)
 
 	return ssh.Run(task.Command)
 }
 
 func (task *Task) CheckExistence(ssh *easyssh.MakeConfig) (result bool, err error) {
-	fmt.Print("Checking existance of '" + task.Command + "'. ")
+	fmt.Print("Checking existance of '%s'", task.Command)
 
-	r, e := ssh.Run("[ ! -e " + task.Command + " ]; echo $?")
+	r, e := ssh.Run(fmt.Sprintf("[ ! -e %s ]; echo $?", task.Command))
 
 	r = strings.Replace(r, "\n", "", -1)
 
-	fmt.Println("Result is '" + r + "'")
+	fmt.Println("Result is '%s'", r)
 
 	if e != nil {
 		err = e
@@ -76,25 +82,35 @@ func (task *Task) CheckExistence(ssh *easyssh.MakeConfig) (result bool, err erro
 }
 
 func (task *Task) Remove(ssh *easyssh.MakeConfig) (err error) {
-	fmt.Println("Removing '" + task.Command + "'")
+	fmt.Println("Removing '%s'", task.Command)
 
-	_, err = ssh.Run("rm " + task.Command)
+	_, err = ssh.Run(fmt.Sprintf("rm %s", task.Command))
 
 	return err
 }
 
 func (task *Task) Download(ssh *easyssh.MakeConfig) (err error) {
-	fmt.Println("Downloading '" + task.Command + "'")
+	fmt.Println("Downloading '%s'", task.Command)
 
-	err = ssh.Download(task.Command, "./storage/" + filepath.Base(task.Command))
+	err = ssh.Download(
+		task.Command,
+		fmt.Sprintf("./%s/%s/%s",
+			task.Config.Filesystem.Storage,
+			task.Config.Filesystem.Files,
+			filepath.Base(task.Command)))
 
 	return err
 }
 
 func (task *Task) Upload(ssh *easyssh.MakeConfig) (err error) {
-	fmt.Println("Uploading '" + task.Command + "'")
+	fmt.Println("Uploading '%s'", task.Command)
 
-	err = ssh.Upload("./storage/" + task.Command, "~/" + filepath.Base(task.Command))
+	err = ssh.Upload(
+		fmt.Sprintf("./%s/%s//%s",
+			task.Config.Filesystem.Storage,
+			task.Config.Filesystem.Files,
+			task.Command),
+		fmt.Sprintf("~/%s", filepath.Base(task.Command)))
 
 	return err
 }

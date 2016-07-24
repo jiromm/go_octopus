@@ -10,12 +10,12 @@ type Connector struct {
 }
 
 func (connector *Connector) Connect() (*easyssh.MakeConfig) {
-	fmt.Println("Connecting to host: " + connector.Config.Host)
+	fmt.Println("Connecting to host: %s", connector.Config.SSH.Host)
 
 	return &easyssh.MakeConfig{
-		Server: connector.Config.Host,
-		User: connector.Config.Username,
-		Password: connector.Config.Password,
-		Port: connector.Config.Port,
+		Server: connector.Config.SSH.Host,
+		User: connector.Config.SSH.Username,
+		Password: connector.Config.SSH.Password,
+		Port: connector.Config.SSH.Port,
 	}
 }

@@ -13,6 +13,8 @@ type Dispatcher struct {
 }
 
 func (dispatcher *Dispatcher) AddTask(task *Task) {
+	task.SetConfig(dispatcher.Config)
+
 	dispatcher.Tasks[I] = task
 	I += 1
 }
@@ -32,7 +34,7 @@ func (dispatcher *Dispatcher) Run() {
 		response, err := i.Run(c)
 
 		if err != nil {
-			fmt.Println("Cannot run a task: " + i.Command)
+			fmt.Println("Cannot run a task: %s", i.Command)
 		}
 
 		fmt.Println(response)

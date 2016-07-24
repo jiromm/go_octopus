@@ -32,7 +32,13 @@ func InitDBConn() *sql.DB {
 func BuildEnvironment(db *sql.DB) (err error) {
 	queries := ReturnQueries()
 
-	return CreateTables(db, queries)
+	err = CreateTables(db, queries)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func ReturnQueries() (queries []string) {
