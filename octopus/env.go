@@ -6,7 +6,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func main() {
+func init() {
 	db := InitDBConn()
 	err := BuildEnvironment(db)
 

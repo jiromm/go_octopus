@@ -19,11 +19,16 @@ type Task struct {
 	Name    string
 	Command string
 	Type	string
+	UUId	int64
 	Config	*Config
 }
 
 func (task *Task) SetConfig(config *Config) {
 	task.Config = config
+}
+
+func (task *Task) SetUUId(uuid int64) {
+	task.UUId = uuid
 }
 
 func (task *Task) Run(ssh *easyssh.MakeConfig) (result string, err error) {
