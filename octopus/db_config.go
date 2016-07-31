@@ -1,4 +1,4 @@
-package config
+package octopus
 
 type DBConfig struct {
 	Name string
@@ -11,7 +11,7 @@ func NewDBConfig(config *DBConfig) *DBConfig {
 	}
 
 	if config.Dir == "" {
-		config.Dir = "db/session.db"
+		config.Dir = "db/octopus.sqlite"
 	}
 
 	return config

@@ -1,4 +1,4 @@
-package config
+package octopus
 
 type FilesystemConfig struct {
 	Storage string

@@ -3,7 +3,6 @@ package octopus
 import (
 	"fmt"
 
-	c "./connector"
 	"database/sql"
 	"time"
 )
@@ -24,15 +23,21 @@ func (dispatcher *Dispatcher) AddTask(task *Task) {
 }
 
 func (dispatcher *Dispatcher) Run() {
-	sshConnector := c.SSHConnector{
+	sshConnector := SSHConnector{
 		Config: dispatcher.Config,
 	}
-	dbConnector := c.DBConnector{
+	dbConnector := DBConnector{
 		Config: dispatcher.Config,
 	}
 
 	ssh := sshConnector.Connect()
 	db := dbConnector.Connect()
+
+	err := BuildEnvironment(db)
+
+	if err != nil {
+		panic(err)
+	}
 
 	sessionId := dispatcher.LetItStart(db)
 	defer dispatcher.LetItEnd(db, sessionId)
@@ -50,24 +55,39 @@ func (dispatcher *Dispatcher) Run() {
 
 		dispatcher.MarkTaskAsDone(db, task)
 
-		fmt.Println(response)
+		if response != "" {
+			fmt.Println(response)
+		}
 	}
 
 	fmt.Println("Done")
 }
 
 func (dispatcher *Dispatcher) LetItStart(db *sql.DB) int64 {
-	sessionId := dispatcher.CreateSession(db)
+	sessionId, err := dispatcher.CreateSession(db)
+
+	if err != nil {
+		panic(err)
+	}
 
 	for _, task := range dispatcher.Tasks {
-		taskId := dispatcher.CreateTask(db, task, sessionId)
+		if task == nil {
+			continue
+		}
+
+		taskId, err := dispatcher.CreateTask(db, task, sessionId)
+
+		if err != nil {
+			panic(err)
+		}
+
 		task.SetUUId(taskId)
 	}
 
 	return sessionId
 }
 
-func (dispatcher *Dispatcher) CreateSession(db *sql.DB) int64 {
+func (dispatcher *Dispatcher) CreateSession(db *sql.DB) (int64, error) {
 	stmt, err := db.Prepare(`
 		INSERT INTO session (
 			name,
@@ -87,17 +107,19 @@ func (dispatcher *Dispatcher) CreateSession(db *sql.DB) int64 {
 		panic(err2)
 	}
 
+	fmt.Println("Session has been created");
+
 	return res.LastInsertId()
 }
 
-func (dispatcher *Dispatcher) CreateTask(db *sql.DB, task *Task, sessionId int64) int64 {
+func (dispatcher *Dispatcher) CreateTask(db *sql.DB, task *Task, sessionId int64) (int64, error) {
 	stmt, err := db.Prepare(`
 		INSERT INTO task (
 			session_id,
 			name,
 			status,
 			started_at
-		) values (?, ?, ?, ?)
+		) values (?, ?, ?, ?);
 	`)
 
 	if err != nil {
@@ -111,6 +133,8 @@ func (dispatcher *Dispatcher) CreateTask(db *sql.DB, task *Task, sessionId int64
 		panic(err2)
 	}
 
+	fmt.Println("Task has been created: ", task.Name);
+
 	return res.LastInsertId()
 }
 
@@ -118,7 +142,7 @@ func (dispatcher *Dispatcher) MarkTaskAsDone(db *sql.DB, task *Task) {
 	stmt, err := db.Prepare(`
 		UPDATE task
 		SET status = ?, ended_at = ?
-		WHERE id = ?
+		WHERE id = ?;
 	`)
 
 	if err != nil {
@@ -131,6 +155,8 @@ func (dispatcher *Dispatcher) MarkTaskAsDone(db *sql.DB, task *Task) {
 	if err2 != nil {
 		panic(err2)
 	}
+
+	fmt.Println("Task '%s' marked as done", task.Name);
 }
 
 func (dispatcher *Dispatcher) CloseSession(db *sql.DB, sessionId int64) {
@@ -150,11 +176,13 @@ func (dispatcher *Dispatcher) CloseSession(db *sql.DB, sessionId int64) {
 	if err2 != nil {
 		panic(err2)
 	}
+
+	fmt.Println("Session with id %d marked as done", sessionId);
 }
 
 func (dispatcher *Dispatcher) LetItEnd(db *sql.DB, sessionId int64) {
-	fmt.Println("DB Connection has been closed")
-
 	dispatcher.CloseSession(db, sessionId)
 	db.Close()
+
+	fmt.Println("DB Connection has been closed")
 }

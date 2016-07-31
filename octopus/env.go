@@ -6,29 +6,6 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func init() {
-	db := InitDBConn()
-	err := BuildEnvironment(db)
-
-	if err != nil {
-		panic(err)
-	}
-}
-
-func InitDBConn() *sql.DB {
-	db, err := sql.Open("sqlite3", "./storage/db/session.db")
-
-	if err != nil {
-		panic(err)
-	}
-
-	if db == nil {
-		panic("db nil")
-	}
-
-	return db
-}
-
 func BuildEnvironment(db *sql.DB) (err error) {
 	queries := ReturnQueries()
 
@@ -52,7 +29,7 @@ func ReturnQueries() (queries []string) {
 		);`,
 		`CREATE TABLE IF NOT EXISTS task (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
-			session_id INTEGER
+			session_id INTEGER,
 			name VARCHAR(128) NULL,
 			status CHAR(1) NOT NULL DEFAULT ('P'), -- P - pending, O - ongoing, F - finished
 			started_at DATE NULL,

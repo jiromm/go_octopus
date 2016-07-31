@@ -14,6 +14,7 @@ const TYPE_EXISTENCE_CONFIDENCE = "existence_confidence"
 const TYPE_REMOVE = "remove"
 const TYPE_DOWNLOAD = "download"
 const TYPE_UPLOAD = "upload"
+const TYPE_TEST = "test"
 
 type Task struct {
 	Name    string
@@ -33,6 +34,8 @@ func (task *Task) SetUUId(uuid int64) {
 
 func (task *Task) Run(ssh *easyssh.MakeConfig) (result string, err error) {
 	switch task.Type {
+	case TYPE_TEST:
+		err = nil
 	case TYPE_EXECUTE:
 		result, err = task.Execute(ssh)
 	case TYPE_EXISTENCE_CONFIDENCE:

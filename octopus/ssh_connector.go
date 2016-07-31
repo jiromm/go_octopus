@@ -1,18 +1,16 @@
-package connector
+package octopus
 
 import (
 	"github.com/jiromm/easyssh"
 	"fmt"
-
-	c "../"
 )
 
 type SSHConnector struct {
-	Config *c.Config
+	Config *Config
 }
 
 func (connector *SSHConnector) Connect() (*easyssh.MakeConfig) {
-	fmt.Println("Connecting to host: %s", connector.Config.SSH.Host)
+	fmt.Println("Connecting to host: ", connector.Config.SSH.Host)
 
 	return &easyssh.MakeConfig{
 		Server: connector.Config.SSH.Host,
