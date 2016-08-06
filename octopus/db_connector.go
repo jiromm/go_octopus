@@ -10,7 +10,7 @@ type DBConnector struct {
 }
 
 func (connector *DBConnector) Connect() (*sql.DB) {
-	fmt.Println("Connecting to db: ", connector.Config.DB.Name)
+	fmt.Printf("Connecting to db [%s]\n", connector.Config.DB.Name)
 
 	db, err := sql.Open("sqlite3", fmt.Sprintf("./%s/%s", connector.Config.Filesystem.Storage, connector.Config.DB.Dir))
 

@@ -7,19 +7,16 @@ import (
 	"time"
 )
 
-var I = 0
-
 type Dispatcher struct {
 	Name  string
-	Tasks [10]*Task
+	Tasks []*Task
 	Config *Config
 }
 
 func (dispatcher *Dispatcher) AddTask(task *Task) {
 	task.SetConfig(dispatcher.Config)
 
-	dispatcher.Tasks[I] = task
-	I += 1
+	dispatcher.Tasks = append(dispatcher.Tasks, task)
 }
 
 func (dispatcher *Dispatcher) Run() {
@@ -40,7 +37,6 @@ func (dispatcher *Dispatcher) Run() {
 	}
 
 	sessionId := dispatcher.LetItStart(db)
-	defer dispatcher.LetItEnd(db, sessionId)
 
 	for _, task := range dispatcher.Tasks {
 		if task == nil {
@@ -50,7 +46,7 @@ func (dispatcher *Dispatcher) Run() {
 		response, err := task.Run(ssh)
 
 		if err != nil {
-			fmt.Println("Cannot run a task: %s", task.Command)
+			fmt.Printf("Cannot run a task [%s]\n", task.Command)
 		}
 
 		dispatcher.MarkTaskAsDone(db, task)
@@ -59,6 +55,8 @@ func (dispatcher *Dispatcher) Run() {
 			fmt.Println(response)
 		}
 	}
+
+	dispatcher.LetItEnd(db, sessionId)
 
 	fmt.Println("Done")
 }
@@ -133,7 +131,7 @@ func (dispatcher *Dispatcher) CreateTask(db *sql.DB, task *Task, sessionId int64
 		panic(err2)
 	}
 
-	fmt.Println("Task has been created: ", task.Name);
+	fmt.Printf("Task has been created [%s]\n", task.Name);
 
 	return res.LastInsertId()
 }
@@ -150,18 +148,18 @@ func (dispatcher *Dispatcher) MarkTaskAsDone(db *sql.DB, task *Task) {
 	}
 	defer stmt.Close()
 
-	_, err2 := stmt.Exec("P", time.Now(), task.UUId)
+	_, err2 := stmt.Exec("F", time.Now(), task.UUId)
 
 	if err2 != nil {
 		panic(err2)
 	}
 
-	fmt.Println("Task '%s' marked as done", task.Name);
+	fmt.Printf("Task [%s] with id %d marked as done\n", task.Name, task.UUId);
 }
 
 func (dispatcher *Dispatcher) CloseSession(db *sql.DB, sessionId int64) {
 	stmt, err := db.Prepare(`
-		UPDATE task
+		UPDATE session
 		SET status = ?, ended_at = ?
 		WHERE id = ?
 	`)
@@ -177,12 +175,12 @@ func (dispatcher *Dispatcher) CloseSession(db *sql.DB, sessionId int64) {
 		panic(err2)
 	}
 
-	fmt.Println("Session with id %d marked as done", sessionId);
+	fmt.Printf("Session with id %d marked as done\n", sessionId);
 }
 
 func (dispatcher *Dispatcher) LetItEnd(db *sql.DB, sessionId int64) {
 	dispatcher.CloseSession(db, sessionId)
-	db.Close()
+	defer db.Close()
 
 	fmt.Println("DB Connection has been closed")
 }

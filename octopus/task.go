@@ -68,7 +68,7 @@ func (task *Task) Execute(ssh *easyssh.MakeConfig) (outStr string, err error) {
 }
 
 func (task *Task) CheckExistence(ssh *easyssh.MakeConfig) (result bool, err error) {
-	fmt.Print("Checking existance of '%s'", task.Command)
+	fmt.Printf("Checking existance of [%s]\n", task.Command)
 
 	r, e := ssh.Run(fmt.Sprintf("[ ! -e %s ]; echo $?", task.Command))
 
@@ -90,7 +90,7 @@ func (task *Task) CheckExistence(ssh *easyssh.MakeConfig) (result bool, err erro
 }
 
 func (task *Task) Remove(ssh *easyssh.MakeConfig) (err error) {
-	fmt.Println("Removing '%s'", task.Command)
+	fmt.Printf("Removing %s\n", task.Command)
 
 	_, err = ssh.Run(fmt.Sprintf("rm %s", task.Command))
 
@@ -98,7 +98,7 @@ func (task *Task) Remove(ssh *easyssh.MakeConfig) (err error) {
 }
 
 func (task *Task) Download(ssh *easyssh.MakeConfig) (err error) {
-	fmt.Println("Downloading '%s'", task.Command)
+	fmt.Printf("Downloading [%s]\n", task.Command)
 
 	err = ssh.Download(
 		task.Command,
@@ -111,7 +111,7 @@ func (task *Task) Download(ssh *easyssh.MakeConfig) (err error) {
 }
 
 func (task *Task) Upload(ssh *easyssh.MakeConfig) (err error) {
-	fmt.Println("Uploading '%s'", task.Command)
+	fmt.Printf("Uploading [%s]\n", task.Command)
 
 	err = ssh.Upload(
 		fmt.Sprintf("./%s/%s//%s",
